@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="HelloWorldService" targetNamespace="http://hello.world.ns/"
+        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+        xmlns:tns="http://hello.world.ns/"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+		xmlns:wsp="http://www.w3.org/ns/ws-policy" 
+        xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" 
+>
+  <wsdl:types>
+<schema xmlns="http://www.w3.org/2001/XMLSchema">
+  <import namespace="http://hello.world.ns/" schemaLocation="HelloWorldService_schema1.xsd"/>
+</schema>
+  </wsdl:types>
+  <wsdl:message name="sayHiResponse">
+    <wsdl:part name="parameters" element="tns:sayHiResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="greetings">
+    <wsdl:part name="parameters" element="tns:greetings">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="greetingsResponse">
+    <wsdl:part name="parameters" element="tns:greetingsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="sayHi">
+    <wsdl:part name="parameters" element="tns:sayHi">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="HelloWorld">
+    <wsdl:operation name="greetings">
+      <wsdl:input name="greetings" message="tns:greetings">
+    </wsdl:input>
+      <wsdl:output name="greetingsResponse" message="tns:greetingsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="sayHi">
+      <wsdl:input name="sayHi" message="tns:sayHi">
+    </wsdl:input>
+      <wsdl:output name="sayHiResponse" message="tns:sayHiResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="HelloWorldServiceSoapBinding" type="tns:HelloWorld">
+    <wsp:PolicyReference URI="#SecurityServiceEncryptThenSignPolicy"/>
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="greetings">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="greetings">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="greetingsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="sayHi">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="sayHi">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="sayHiResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="HelloWorldService">
+    <wsdl:port name="HelloWorldPort" binding="tns:HelloWorldServiceSoapBinding">
+      <soap:address location="http://localhost:9090/HelloWorldPort"/>
+    </wsdl:port>
+  </wsdl:service>
+  
+  <wsp:Policy wsu:Id="SecurityServiceEncryptThenSignPolicy" xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+    <wsp:ExactlyOne>
+      <wsp:All>
+        <sp:AsymmetricBinding xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+          <wsp:Policy>
+            <sp:InitiatorToken>
+              <wsp:Policy>
+                <sp:X509Token sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+                  <wsp:Policy>
+                    <sp:WssX509V1Token11/>
+                  </wsp:Policy>
+                </sp:X509Token>
+              </wsp:Policy>
+            </sp:InitiatorToken>
+            <sp:RecipientToken>
+              <wsp:Policy>
+                <sp:X509Token sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/Never">
+                  <wsp:Policy>
+                    <sp:WssX509V1Token11/>
+                  </wsp:Policy>
+                </sp:X509Token>
+              </wsp:Policy>
+            </sp:RecipientToken>
+            <sp:AlgorithmSuite>
+              <wsp:Policy>
+                <sp:TripleDesRsa15/>
+              </wsp:Policy>
+            </sp:AlgorithmSuite>
+            <sp:Layout>
+              <wsp:Policy>
+                <sp:Strict/>
+              </wsp:Policy>
+            </sp:Layout>
+            <sp:IncludeTimestamp/>
+            <sp:ProtectTokens/>
+            <sp:OnlySignEntireHeadersAndBody/>
+            <sp:EncryptBeforeSigning/>
+          </wsp:Policy>
+        </sp:AsymmetricBinding>
+        <sp:SignedParts xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+          <sp:Body/>
+        </sp:SignedParts>
+        <sp:EncryptedParts xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+          <sp:Body/>
+        </sp:EncryptedParts>
+        <sp:Wss10 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+          <wsp:Policy>
+            <sp:MustSupportRefIssuerSerial/>
+          </wsp:Policy>
+        </sp:Wss10>
+      </wsp:All>
+    </wsp:ExactlyOne>
+  </wsp:Policy>
+</wsdl:definitions>

@@ -1,0 +1,17 @@
+This is a sample project for developing a Web Service starting from Java code and using JBossWS.
+
+The project has the usual Maven structure and is built with:
+
+> mvn clean package
+
+To deploy the generated WAR archive to a running WildFly instance use:
+
+> mvn wildfly:deploy
+
+Once the WAR is deployed, the integration testsuite is run with:
+
+> mvn integration-test
+
+Finally, you can undeploy the WAR with:
+
+> mvn wildfly:undeploy

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?><xs:schema xmlns:tns="http://hello.world.ns/" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified" targetNamespace="http://hello.world.ns/" version="1.0">
+<xs:element name="greetings" type="tns:greetings"/>
+<xs:element name="greetingsResponse" type="tns:greetingsResponse"/>
+<xs:element name="sayHi" type="tns:sayHi"/>
+<xs:element name="sayHiResponse" type="tns:sayHiResponse"/>
+<xs:complexType name="greetings">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:person"/>
+    </xs:sequence>
+  </xs:complexType>
+<xs:complexType name="person">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="name" type="xs:string"/>
+      <xs:element minOccurs="0" name="surname" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+<xs:complexType name="greetingsResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+<xs:complexType name="sayHi">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+<xs:complexType name="sayHiResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

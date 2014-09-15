@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.itbuzzpress.chapter5</groupId>
+	<artifactId>wsse-auth-sample</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<dependencies>
+		<dependency>
+			<groupId>org.jboss.spec</groupId>
+			<artifactId>jboss-javaee-7.0</artifactId>
+			<version>1.0.0.Final</version>
+			<type>pom</type>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.ws.cxf</groupId>
+			<artifactId>jbossws-cxf-client</artifactId>
+			<version>4.2.3.Final</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.ejb3</groupId>
+			<artifactId>jboss-ejb3-ext-api</artifactId>
+			<version>2.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.14</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<repositories>
+		<repository>
+			<id>JBOSS_NEXUS</id>
+			<url>http://repository.jboss.org/nexus/content/groups/public</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>JBOSS_NEXUS</id>
+			<url>http://repository.jboss.org/nexus/content/groups/public</url>
+		</pluginRepository>
+	</pluginRepositories>
+	<build>
+		<testResources>
+			<!-- Copy the Log4J configuration in the test classpath -->
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>log4j.xml</include>
+				</includes>
+			</testResource>
+			<!-- Copy the test keystores in the test classpath -->
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>false</filtering> <!-- disable filtering to avoid corrupting the keystore -->
+				<includes>
+					<include>**/*.jks</include>
+					<include>**/*.properties</include>
+					<include>**/*.xml</include>
+				</includes>
+			</testResource>
+		</testResources>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>WEB-INF/**</exclude> <!-- Exclude WEB-INF as it's treated explictly in the war plugin -->
+				</excludes>
+			</resource>
+		</resources>
+		<!-- The name of the WAR deployment -->
+		<finalName>wsse-auth-sample</finalName>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<!-- The plugin for WildFly deploy / undeploy -->
+			<plugin>
+				<groupId>org.wildfly.plugins</groupId>
+				<artifactId>wildfly-maven-plugin</artifactId>
+				<version>1.0.0.Beta1</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<webResources>
+						<resource>
+							<directory>src/main/resources</directory>
+						</resource>
+					</webResources>
+					<archive>
+						<manifestEntries>
+							<Dependencies>org.jboss.ws.cxf.jbossws-cxf-client</Dependencies>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<!-- JBossWS JAXWS tools plugins -->
+			<plugin>
+				<groupId>org.jboss.ws.plugins</groupId>
+				<artifactId>maven-jaxws-tools-plugin</artifactId>
+				<version>1.1.2.Final</version>
+				<configuration>
+					<verbose>true</verbose>
+				</configuration>
+				<executions>
+					<execution>
+						<!-- Run wsconsume in generate-test-sources phase to generate the portable 
+							artifacts for creating a test client -->
+						<id>wsconsume execution</id>
+						<goals>
+							<goal>wsconsume-test</goal>
+						</goals>
+						<configuration>
+							<fork>true</fork> <!-- Fork mode to specify the log conf sys prop below -->
+							<argLine>-Dlog4j.output.dir=${project.build.directory}</argLine>
+							<wsdls>
+								<wsdl>src/main/resources/WEB-INF/wsdl/HelloWorldService.wsdl</wsdl>
+							</wsdls>
+							<targetPackage>client</targetPackage>
+							<outputDirectory>${project.build.directory}/wsconsume</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Surefire (tests) plugin -->
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.7.2</version>
+				<configuration>
+					<skip>true</skip>
+					<failIfNoTests>false</failIfNoTests>
+					<systemProperties>
+						<property>
+							<name>log4j.output.dir</name>
+							<value>${project.build.directory}</value>
+						</property>
+					</systemProperties>
+				</configuration>
+				<executions>
+					<!-- The integration tests execution, for tests against a running container 
+						with the deployment available -->
+					<execution>
+						<id>integration-tests</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<includes>
+								<include>**/*IntegrationTest.java</include>
+								<include>**/*IntegrationTestCase.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<!-- The unit tests execution -->
+					<execution>
+						<id>tests</id>
+						<phase>test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<includes>
+								<include>**/*Test.java</include>
+								<include>**/*TestCase.java</include>
+							</includes>
+							<excludes>
+								<exclude>**/*IntegrationTest.java</exclude>
+								<exclude>**/*IntegrationTestCase.java</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<!-- A profile for avoid meaningless Eclipse warnings / errors (see https://issues.jboss.org/browse/JBWS-3666) -->
+		<profile>
+			<id>eclipse-m2e</id>
+			<activation>
+				<property>
+					<name>!eclipse-m2e</name>
+				</property>
+			</activation>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<!--This plugin's configuration is used to store Eclipse m2e settings 
+							only. It has no influence on the Maven build itself. -->
+						<plugin>
+							<groupId>org.eclipse.m2e</groupId>
+							<artifactId>lifecycle-mapping</artifactId>
+							<version>1.0.0</version>
+							<configuration>
+								<lifecycleMappingMetadata>
+									<pluginExecutions>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>org.jboss.ws.plugins</groupId>
+												<artifactId>maven-jaxws-tools-plugin</artifactId>
+												<versionRange>[1.1.1.Final,)</versionRange>
+												<goals>
+													<goal>wsconsume</goal>
+													<goal>wsconsume-test</goal>
+													<goal>wsprovide</goal>
+													<goal>wsprovide-test</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore />
+											</action>
+										</pluginExecution>
+									</pluginExecutions>
+								</lifecycleMappingMetadata>
+							</configuration>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+	</profiles>
+</project>
