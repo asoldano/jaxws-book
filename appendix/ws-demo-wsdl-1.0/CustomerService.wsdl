@@ -1,0 +1,53 @@
+<definitions name='CustomerService' targetNamespace='http://wsdemo.chapter2.itbuzzpress.com/' xmlns='http://schemas.xmlsoap.org/wsdl/' xmlns:soap='http://schemas.xmlsoap.org/wsdl/soap/' xmlns:tns='http://wsdemo.chapter2.itbuzzpress.com/' xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
+ <types>
+  <xs:schema targetNamespace='http://wsdemo.chapter2.itbuzzpress.com/' version='1.0' xmlns:tns='http://wsdemo.chapter2.itbuzzpress.com/' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+   <xs:complexType name='USAddress'>
+    <xs:sequence>
+     <xs:element name='address' nillable='true' type='xs:string'/>
+    </xs:sequence>
+   </xs:complexType>
+   <xs:complexType name='CustomerRecord'>
+    <xs:sequence>
+     <xs:element name='firstName' nillable='true' type='xs:string'/>
+     <xs:element name='lastName' nillable='true' type='xs:string'/>
+     <xs:element name='address' nillable='true' type='tns:USAddress'/>
+    </xs:sequence>
+   </xs:complexType>
+  </xs:schema>
+ </types>
+  
+ <message name='Customer_locateCustomer'>
+  <part name='FirstName' type='xsd:string'/>
+  <part name='LastName' type='xsd:string'/>
+  <part name='Address' type='tns:USAddress'/>
+ </message>
+ <message name='Customer_locateCustomerResponse'>
+  <part name='CustomerRecord' type='tns:CustomerRecord'/>
+ </message>
+  
+ <portType name='Customer'>
+  <operation name='locateCustomer' parameterOrder='FirstName LastName Address'>
+   <input message='tns:Customer_locateCustomer'/>
+   <output message='tns:Customer_locateCustomerResponse'/>
+  </operation>
+ </portType>
+  
+ <binding name='CustomerBinding' type='tns:Customer'>
+  <soap:binding style='rpc' transport='http://schemas.xmlsoap.org/soap/http'/>
+  <operation name='locateCustomer'>
+   <soap:operation soapAction=''/>
+   <input>
+    <soap:body namespace='http://wsdemo.chapter2.itbuzzpress.com/' use='literal'/>
+   </input>
+   <output>
+    <soap:body namespace='http://wsdemo.chapter2.itbuzzpress.com/' use='literal'/>
+   </output>
+  </operation>
+ </binding>
+  
+ <service name='CustomerService'>
+  <port binding='tns:CustomerBinding' name='CustomerPort'>
+   <soap:address location='http://localhost:8080/ws-demo-wsdl-1.0/CustomerImpl'/>
+  </port>
+ </service>
+</definitions>
